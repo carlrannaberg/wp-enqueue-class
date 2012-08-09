@@ -12,11 +12,15 @@ Class Name: enqueue_handler
 Functions:
 
 i. function js($scripts)
-	$scripts = array of scripts to be enqueued. 
-		foreach ($scripts as $script) 
-		$script = array(prefix,name,src,file,deps,version,footerLoad,location) 
-		$footerLoad = string[header,footer]
-		$location = string[frontend,backend,both]
+
+[$scripts] = array of scripts to be enqueued.
+
+[foreach ($scripts as $script)]
+[$script] = array(prefix,name,src,file,deps,version,footerLoad,location)
+
+[$script[param]]
+[$footerLoad] = string[header,footer]
+[$location] = string[frontend,backend,both]
 
 ii.	function css($styles): 
 	$style = array of styles to be enqueued.

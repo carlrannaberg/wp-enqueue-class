@@ -5,8 +5,8 @@ ENQUEUE CLASS
 
 class enqueue_handler;
 
-->	function js($scripts) 
-	$scripts = array of scripts to be enqueued. 
+->	function js($scripts)
+		$scripts = array of scripts to be enqueued. 
 		foreach ($scripts as $script) 
 		$script = array(prefix,name,src,file,deps,version,footerLoad,location) 
 		$footerLoad = string[header,footer]
@@ -40,7 +40,7 @@ class enqueue_handler {
 			$script['footerLoad']
 		);
 		
-		switch ($script['location']) {
+			switch ($script['location']) {
 			
 				case 'frontend':
 					
