@@ -14,16 +14,18 @@ Functions:
 i. function js($scripts)
 ========================
 
-$scripts = array of scripts to be enqueued.
+$scripts
 --------
+Array of scripts to be enqueued
 
 foreach ($scripts as $script)
 -----------------------------
 
-$script = array( prefix, name, src, file, deps, version, footerLoad, location)
+$script 
 -------
+$script[params] = array( prefix, name, src, file, deps, version, footerLoad, location)
 
-$script[param]
+$script[params]
 --------------
 $prefix = string [used to prevent clash between other Wordpress / 3rd Party script enqueues]
 $name = enqueue pseudoname in Wordpress
@@ -37,14 +39,16 @@ $location = string[frontend, backend, both]
 ii.	function css($styles)
 =========================
 
-$style = array of styles to be enqueued.
+$style 
 ------
+Array of styles to be enqueued
 
 foreach ($styles as $style)
 ---------------------------
 
-$style = array( prefix, name, src, file, deps, version, media, location)
+$style 
 ------
+array( prefix, name, src, file, deps, version, media, location)
 
 $style[param]
 -------------
@@ -56,6 +60,7 @@ $deps = string / array [contains list of script pseudonames required for file lo
 $version = int / string
 $media = string [all, aural, braille, embossed, handheld, print, projection, screen, tty, tv]
 $location = string[frontend, backend, both]
+
 
 iii. Usage
 ==========
