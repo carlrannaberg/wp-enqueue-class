@@ -1,4 +1,23 @@
-dxm-wp-enqueue
+(dxm) Wordpress Enqueue Class
 ==============
-
 Quickly and efficiently Enqueue scripts and stylesheets for Wordpress.
+
+
+
+ENQUEUE CLASS
+-------------
+
+class enqueue_handler;
+
+->	function js($scripts) 
+	$scripts = array of scripts to be enqueued. 
+		foreach ($scripts as $script) 
+		$script = array(prefix,name,src,file,deps,version,footerLoad,location) 
+		$footerLoad = string[header,footer]
+		$location = string[frontend,backend,both]
+
+->	function css($styles): 
+	$style = array of styles to be enqueued.
+		foreach ($styles as $style)
+		$style = array(prefix,name,src,file,deps,version,media,location)
+		$location = string[frontend,backend,both]
