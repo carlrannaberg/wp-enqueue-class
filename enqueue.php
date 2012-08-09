@@ -20,8 +20,15 @@ class enqueue_handler;
 			
 */
 
+
 /* Instantiate Wordpress Environment */
-require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/wp-blog-header.php');
+
+$docRoot = $_SERVER['DOCUMENT_ROOT'];
+$scriptName = $_SERVER['SCRIPT_NAME'];
+$queryArray = explode("/", $scriptName);
+
+
+require_once($docRoot .'/'. $queryArray[1] .'/wp-blog-header.php');
 
 class enqueue_handler {
 
@@ -177,7 +184,5 @@ class enqueue_handler {
 	}
 	
 }
-
-
 
 ?>
