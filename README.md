@@ -12,18 +12,91 @@ Class Name: enqueue_handler
 Functions:
 
 i. function js($scripts)
+========================
 
-[$scripts] = array of scripts to be enqueued.
+$scripts = array of scripts to be enqueued.
+--------
 
-[foreach ($scripts as $script)]
-[$script] = array(prefix,name,src,file,deps,version,footerLoad,location)
+foreach ($scripts as $script)
+-----------------------------
 
-[$script[param]]
-[$footerLoad] = string[header,footer]
-[$location] = string[frontend,backend,both]
+$script = array( prefix, name, src, file, deps, version, footerLoad, location)
+-------
 
-ii.	function css($styles): 
-	$style = array of styles to be enqueued.
-		foreach ($styles as $style)
-		$style = array(prefix,name,src,file,deps,version,media,location)
-		$location = string[frontend,backend,both]
+$script[param]
+--------------
+$prefix = string [used to prevent clash between other Wordpress / 3rd Party script enqueues]
+$name = enqueue pseudoname in Wordpress
+$src = url/path/to/script/folder
+$file = filename.ext
+$deps = string / array [contains list of script pseudonames required for file load]
+$version = int / string
+$footerLoad = string[header, footer]
+$location = string[frontend, backend, both]
+
+ii.	function css($styles)
+=========================
+
+$style = array of styles to be enqueued.
+------
+
+foreach ($styles as $style)
+---------------------------
+
+$style = array( prefix, name, src, file, deps, version, media, location)
+------
+
+$style[param]
+-------------
+$prefix = string [used to prevent clash between other Wordpress / 3rd Party script enqueues]
+$name = enqueue pseudoname in Wordpress
+$src = url/path/to/script/folder
+$file = filename.ext
+$deps = string / array [contains list of script pseudonames required for file load]
+$version = int / string
+$media = string [all, aural, braille, embossed, handheld, print, projection, screen, tty, tv]
+$location = string[frontend, backend, both]
+
+iii. Usage
+==========
+
+Setup
+-----
+
+function enqueue_js() {
+
+	$scripts = array (
+	
+		array(
+				'prefix' => 'crockford',
+				'name' => 'json2',
+				'src' => $routing['url']['js'],
+				'file' => 'json2.js',
+				'deps' => '',
+				'version' => '1.0',
+				'footerLoad' => true,
+				'location' => 'frontend'
+			),
+	
+	);
+	
+	/* Get file that contains Enqueue class */
+	require_once ("path/to/enqueue.php");
+	
+	$enqueue = new enqueue_handler;
+	$enqueue->js($scripts);
+
+}
+
+Usage
+-----
+
+if (!is_admin()) {
+
+	add_action ('wp_enqueue_scripts', 'enqueue_js');
+
+} else {
+
+	add_action ('admin_enqueue_scripts', 'enqueue_js');
+	
+}
