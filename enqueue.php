@@ -20,16 +20,6 @@ class enqueue_handler;
 			
 */
 
-
-/* Instantiate Wordpress Environment */
-
-$docRoot = $_SERVER['DOCUMENT_ROOT'];
-$scriptName = $_SERVER['SCRIPT_NAME'];
-$queryArray = explode("/", $scriptName);
-
-
-require_once($docRoot .'/'. $queryArray[1] .'/wp-blog-header.php');
-
 class enqueue_handler {
 
 	function js($scripts) {
