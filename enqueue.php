@@ -31,7 +31,7 @@ class enqueue_handler {
 		
 		wp_register_script (
 			$script['prefix'].'-'.$script['name'],
-			$script['src'] . $script['file'],
+			$script['src'] ."/". $script['file'],
 			$script['deps'],
 			$script['version'],
 			$script['footerLoad']
@@ -106,7 +106,7 @@ class enqueue_handler {
 			
 			wp_register_style( 
 				$style['prefix'] . '-' . $style['name'], 
-				$style['src'] . $style['file'], 
+				$style['src'] ."/". $style['file'], 
 				$style['deps'], 
 				$style['version'], 
 				$style['media'] 
