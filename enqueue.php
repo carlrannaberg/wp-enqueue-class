@@ -1,92 +1,122 @@
-<?php
+<?php 
+	
+	/*
 
-/*
+	SIMPLY ENQUEUE
+	It shouldn't be complicated to add files in wordpress in a neat fashion.
+	Team Automattic built a nice and neat way to do it (via enqueues).
+	This is only a wrapper that simplifies their work.
 
-SIMPLY ENQUEUE
-It shouldn't be complicated to add files in wordpress in a neat fashion.
-Team Automattic built a nice and neat way to do it (via enqueues).
-This is meant to be a wrapper that simplifies enqueues.
-All you need to do is $implyEnqueue->this
-Enjoy! 
-o/
+	Enjoy! 
+	o/
+	
 
+	$about_this_class = array(	
+		"name" => "(dxm) Simply Enqueue",
+		"class" => "SimplyEnqueue",
+		"version" => "0.0.1",
+		"github" => "https://github.com/Akamaozu/dxm-wp-enqueue"
+	)
 
-class SimplyEnqueue;
+	// REQUIRED PARAMS
+	"handle" => "handle",
+	"url" => "url/to/file.css",
+		|- CSS or JS
 
-// ADD A SINGLE FILE
-|- Stylesheet or Javascript
+	// OPTIONAL PARAMS
+	"deps" => "handle" || "url/to/file.js" || array("handle", "url/to/file.js"),
 
-->	function this($file)
-		$file = array(
+	"ver" => "version number", 
+		|- will default to 0.0.0 if unset
 
-			// REQUIRED PARAMS
-			"handle" => "handle",
-			"url" => "url/to/file.css",
-				|- CSS or JS
-			
-			// OPTIONAL PARAMS
-			"deps" => "handle" || "url/to/file.js" || array("handle", "url/to/file.js"),
-			
-			"ver" => "version number", 
-				|- will default to 0.0.1 if unset
-			
-			"usecase" => "frontend" || "backend" || "template.php" || array("home-page.php", "author.php, "backend") || "all", 
-				|- will default to all if unset
-			
-			"js_in_header" => true || false
-				|- only for JS files
-				|- will default to false if unset
-				|- will be overridden if a dependency specifies false for this property
-			
-			"media" => "all" || "print" || screen"
-				|- only for CSS files
-				|- will default to all if unset
-			);
+	"usecase" => "frontend" || "backend" || "template.php" || array("home-page.php", "author.php, "backend") || "login" || "all", 
+		|- will default to frontend if unset
 
------ or -----
+	"js_in_header" => true || false
+		|- only for JS files
+		|- will default to false if unset
+		|- will be overridden if a dependency specifies false for this property
 
-// ADD MULTIPLE FILES
+	"media" => "all" || "print" || screen"
+		|- only for CSS files
+		|- will default to all if unset
 
-->	function these($files) 
-		$scripts = array (
-			
-			$file,
-			$another_file,
-			$one_more_file
-		);
-			
-*/
+	"enqueue" => true || false || function
+		|- determines if file should be enqueued
+		|- function must return true or false
+		|- will default to false if unset
+	);
+				
+	*/
+
 
 	class SimplyEnqueue {
 
-		var $enqueue_hook,
-			$unvetted,
-			$unregistered,
-			$unenqueued,
-			$wpenqueues;
+		private $items_to_register = array(),
+				$items_to_enqueue = array(),
+				$instance_params = array(),
+				$process = array(),
+				$enqueue_hook;
 
-		// DETERMINE APPROPRIATE ENQUEUE HOOK AND RETURN IT		
-		private function get_enqueue_hook() {
+		private function _is_register_data($data){
 
-			// check if login / register page
-			if ( in_array( $GLOBALS['pagenow'], array( 'wp-login.php', 'wp-register.php' ) ) ) {
+			if ( isset($data) && isset($data["handle"]) && isset($data["url"]) ) {
 
-				$correct_hook = 'login_enqueue_scripts';
-			
-			} else {
+				return true;
+			}
 
-				// check if backend page
-				// if not, assume frontend
-				$correct_hook = ( true == is_admin() ? 'admin_enqueue_scripts' : 'wp_enqueue_scripts' );
-			} 
-
-			return $correct_hook;
+			return false;
 		}
 
+		private function _contains_register_data($wrapper) {
+
+			if ( !is_array($wrapper) && !is_object($wrapper) ){
+
+				return false;
+			}
+
+			foreach ($wrapper as $data){
+
+				if ( $this->_is_register_data($data) ){
+
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private function _is_enqueue_data($data){
+
+			if ( isset($data) && ( is_array($data) || is_object($data) ) && isset($data["handle"]) ){
+
+				return true;
+			}
+
+			return false;
+		}
+
+		private function _contains_enqueue_data($wrapper){
+
+			if ( !is_array($wrapper) && !is_object($wrapper) ){
+
+				return false;
+			}
+
+			foreach ($wrapper as $data){
+
+				if ( $this->_is_enqueue_data($data) ){
+
+					return true;
+				}
+			}
+
+			return false;
+		}
 
 		// CHECK IF URL IS STYLESHEET OR JAVASCRIPT
-		// returns css || js || unknown
-		private function get_filetype($url){
+		// @return string - "css" || "js" || "unknown"
+		private function _get_filetype($url){
 
 			// set default filetype
 			$filetype = 'unknown';
@@ -99,8 +129,7 @@ class SimplyEnqueue;
 				$filename = $fractalUrl[count($fractalUrl) - 1];
 				$fractalFilename = explode('.', $filename);
 
-				$fileExtension = $fractalFilename[1];
-				$fileExtension = strtolower($fileExtension);
+				$fileExtension = strtolower($fractalFilename[1]);
 
 				if (strpos($fileExtension, "js") !== false) {
 
@@ -116,50 +145,7 @@ class SimplyEnqueue;
 			return $filetype;
 		}
 
-		private function is_usecase($usecase){
-
-			switch ($usecase) {
-
-				case 'frontend': 
-
-					if ( !is_admin() && !in_array( $GLOBALS['pagenow'], array( 'wp-login.php', 'wp-register.php' )) ){
-
-						return true;
-					} 
-
-					else {
-
-						return false;
-					}
-
-				break;
-
-				case 'backend':
-
-					if ( is_admin() && !in_array( $GLOBALS['pagenow'], array( 'wp-login.php', 'wp-register.php' )) ){
-
-						return true;
-					}
-
-					else {
-
-						return false;
-					}
-
-				break;
-
-				case 'all':
-
-					return true;
-				break;
-
-
-			}
-		}
-
-		// SKIP BROKEN FILES
-		// set defaults for missing variables
-		private function vet($file) {
+		private function _normalize_for_registration($file){
 
 			// error handling
 			if ( !$file['handle'] || !$file['url'] ) {
@@ -183,7 +169,7 @@ class SimplyEnqueue;
 				}
 			}
 
-			$filetype = $this->get_filetype($file['url']);
+			$filetype = $this->_get_filetype($file['url']);
 
 			if ( $filetype == 'unknown') {
 
@@ -191,13 +177,15 @@ class SimplyEnqueue;
 				return;
 			}
 
-			// normalize and move it to the next step
+			$file["filetype"] = $filetype;
 			
 			// set version number
-			$file['ver'] = ($file['ver'] ? $file['ver'] : "0.0.1");
+			$file['ver'] = ($file['ver'] ? $file['ver'] : "0.0.0");
 			
 			// set usecase
 			$file['usecase'] = ($file['usecase'] ? $file['usecase'] : "all");
+
+			$file['enqueue'] = ($file['enqueue'] ? $file['enqueue'] : false);
 
 			// javascript specific vetting
 			if ($filetype == "js") {
@@ -211,134 +199,212 @@ class SimplyEnqueue;
 				$file['media'] = ($file['media'] ? $file['media'] : "all");
 			} 
 
-			$this->unregistered[] = $file;
+			return $file;
 		}
 
-		// Start vetting process
-		private function processUnvetted() {
+		private function _normalize_for_enqueue($data){
 
-			foreach ($this->unvetted as $file) {
+			$item_to_enqueue = array();
 
-				$this->vet($file);
+			$item_to_enqueue['handle'] = $data["handle"];
+			$item_to_enqueue['usecase'] = ($data["usecase"] ? $data['usecase'] : 'frontend' );
+			$item_to_enqueue['filetype'] = ($data['filetype'] ? $data['filetype'] : ($data['url'] ? $this->_get_filetype($data['url']) : "unknown") );
+
+			return $item_to_enqueue;
+		}
+
+		private function _add_to_register_list($data){
+
+			$this->items_to_register[] = $this->_normalize_for_registration($data);
+
+			if ($this->process["register"] != true){
+
+				$this->process["register"] = true;
 			}
 		}
 
-		private function processUnregistered() {
+		private function _add_to_enqueue_list($data){
 
-			foreach ($this->unregistered as $file) {
+			$this->items_to_enqueue[] = $this->_normalize_for_enqueue($data);
 
-				$filetype = $this->get_filetype($file['url']);
+			if ($this->process["enqueue"] != true){
 
-				if ( $filetype == "js") {
+				$this->process["enqueue"] = true;
+			}
+		}
+
+		private function _register_items(){
+
+			foreach ($this->items_to_register as $file){
+
+				if ( $file["filetype"] == "js") {
 				
 					wp_register_script(	$file['handle'], $file['url'], $file['deps'], $file['ver'], !$file['js_in_header'] );
 				}
 
-				if ( $filetype == "css") {
+				if ( $file["filetype"] == "css") {
 
 					wp_register_style( $file['handle'], $file['url'], $file['deps'], $file['ver'], $file['media'] );
 				}
 
-				$this->unenqueued[] = array(
-					"type" => $filetype,
-					"handle" => $file['handle'],
-					"usecase" => $file['usecase']
-				);
-			}
+				if ( (isset($file['enqueue'])) && (($file['enqueue'] === true) || (is_callable($file['enqueue']) && $file['enqueue']() === true)) ){
+
+					$this->_add_to_enqueue_list($file);
+				}
+			} 
 		}
 
-		private function processUnenqueued() {
+		private function _enqueue_items(){
 
-			foreach ($this->unenqueued as $file) {
+			foreach ($this->items_to_enqueue as $file){
 
-				/*
-				if ($file['usecase']) {
+				$filetype = $file["filetype"] || ( $file['url'] ? $this->_get_filetype($file['url']) : 'unknown' );
 
-					if ( !is_array($file['usecase']) ){
-
-						if ( $this->is_usecase($file['usecase']) == false ) {
-
-							continue;
-						}
-					}
-
-					if ( is_array($file['usecase']) ){
-
-						foreach ( $file['usecase'] as $usecase ) {
-
-							if ( $this->is_usecase($usecase) == false ) {
-
-								continue;
-							}
-						}
-					}
+				if ( $filetype == "js") {
+				
+					wp_enqueue_script(	$file['handle'] );
 				}
 
-				*/
+				if ( $filetype == "css") {
 
-				if ($file['type'] == 'css') { 
+					wp_enqueue_style( $file['handle'] );
+				}
 
-					wp_enqueue_style($file['handle']); 
-				} else 
+				if ( $filetype == "unknown") {
 
-				if ($file['type'] == 'js') { 
+				 	// check if handle is a style or script
+					// enqueue accordingly
+					
+					// for now, fire blindly
+					wp_enqueue_style( $file['handle'] );
+					wp_enqueue_script(	$file['handle'] );
+				}
+			} 
+		}
 
-					wp_enqueue_script($file['handle']); 
+		/* 
+			PUBLIC FUNCTIONS 
+			* Accessible from outside the Class
+
+			|- Class Instance
+				|-> get_enqueue_hook
+				|-> register
+				|-> init_instance
+		*/
+
+
+		// DETERMINE APPROPRIATE ENQUEUE HOOK AND RETURN IT
+		// @returns: string	
+		public function get_enqueue_hook() {
+
+			if ( isset($this->enqueue_hook) && in_array(strtolower($this->enqueue_hook), array( "wp_enqueue_scripts", "admin_enqueue_scripts", "login_enqueue_scripts") )  ){
+
+				return $this->enqueue_hook;
+			}
+
+			else {
+
+				// check if login / register page
+				if ( in_array( $GLOBALS['pagenow'], array( 'wp-login.php', 'wp-register.php' ) ) ) {
+
+					$this->enqueue_hook = 'login_enqueue_scripts';
+				
+				} else {
+
+					// check if backend page
+					// if not, assume frontend
+					$this->enqueue_hook = ( true == is_admin() ? 'admin_enqueue_scripts' : 'wp_enqueue_scripts' );
+				} 
+
+				return $this->enqueue_hook;
+			}
+		}
+
+		// SET FILE(S) FOR REGISTRATION
+		public function register( $params = array() ){
+
+			// improper $params
+			if ( !$this->_is_register_data($params) && !$this->_contains_register_data($params) ){
+
+				return $this;
+			}
+
+			// $params = single enqueue file
+			if ( $this->_is_register_data($params) ){
+
+				$this->_add_to_register_list($params);
+
+				echo $this->_is_register_data($params);
+			}
+
+			// $params = multiple enqueue files
+			if( $this->_contains_register_data($params) ){
+
+				foreach ($params as $data){
+
+					if ( $this->_is_register_data($data) ){
+
+						$this->_add_to_register_list($data);
+					}
 				}
 			}
+
+			return $this;
 		}
 
-		public function startEnqueue(){
+		// ENQUEUE FILE(S)
+		public function enqueue( $params = array() ){
 
-			$this->processUnenqueued();
-		}
+			// improper $params
+			if ( !$this->_is_enqueue_data($params) && !$this->_contains_enqueue_data($params) ){
 
-		// ENQUEUE A SINGLE FILE
-		public function this($file){
-
-			$this->unvetted[] = $file;
-
-			// if start-up trigger isn't in place, put it there
-			if ( !has_action('simplyEnqueue', array($this, 'startEnqueue')) ) {
-
-				add_action('simplyEnqueue', array($this, 'startEnqueue'));
+				return $this;
 			}
 
-			$this->processUnvetted();
-			$this->processUnregistered();
-		}
+			// $params = single enqueue file
+			if ( $this->_is_enqueue_data($params) ){
 
-		// ENQUEUE MULTIPLE FILES
-		public function these($files){
-
-			foreach ($files as $file) {
-
-				$this->this($file);
+				$this->_add_to_enqueue_list($params);
 			}
 
-			$this->processUnvetted();
-			$this->processUnregistered();
+			// $params = multiple enqueue files
+			if( $this->_contains_enqueue_data($params) ){
+
+				foreach ($params as $data){
+
+					if ( $this->_is_enqueue_data($data) ){
+
+						$this->_add_to_enqueue_list($data);
+					}
+				}
+			}
+
+			return $this;
 		}
 
-		// ENQUEUE PROCESS ACTIVATION 
-		public function simplyEnqueue() {
+		// PROCESS INSTANCE
+		public function init_instance(){
 
-			do_action('simplyEnqueue');
-		}
+			if ($this->process["register"] == true) {
 
-		// CONSTRUCTOR
-		function __construct() {
+				$this->_register_items();
+			}
 
-			// determine hook and set to variable
-			$this->enqueue_hook = $this->get_enqueue_hook();
+			if ($this->process["enqueue"] == true) {
 
-			// if action hook hasn't been declared, do it
-			if ( !has_action($this->enqueue_hook, 'simplyEnqueue') ) {
+				$this->_enqueue_items();
+			}
+		}		
 
-				add_action($this->enqueue_hook, array($this, 'simplyEnqueue'));
+		function __construct( $params = NULL ){
+
+			$this->instance_params = $params;
+
+
+			if ( !has_action($this->get_enqueue_hook(), array($this, 'init_instance')) ){
+
+				add_action( $this->get_enqueue_hook(), array($this, 'init_instance') );
 			}
 		}
-
 	}
-
 ?>
