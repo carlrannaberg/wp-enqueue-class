@@ -174,29 +174,33 @@
 			if ( $filetype == 'unknown') {
 
 				echo "'" . $file['handle'] . "' doesn't seem to be a stylesheet or javascript. Doublecheck the url. <br />";
-				return;
+				// letting it continue through, just in case its a valid file served up in a format _get_filetype() doesn't check. 
+				// an example is css served as a php file
 			}
 
 			$file["filetype"] = $filetype;
 			
-			// set version number
-			$file['ver'] = ($file['ver'] ? $file['ver'] : "0.0.0");
+			// version number
+			$file['ver'] = (isset($file['ver']) ? $file['ver'] : "0.0.0");
 			
-			// set usecase
-			$file['usecase'] = ($file['usecase'] ? $file['usecase'] : "all");
+			// usecase
+			$file['usecase'] = (isset($file['usecase']) ? $file['usecase'] : "all");
 
-			$file['enqueue'] = ($file['enqueue'] ? $file['enqueue'] : false);
+			// dependencies
+			$file['deps'] = (isset($file['deps']) ? $file['deps'] : array());
+
+			$file['enqueue'] = (isset($file['enqueue']) ? $file['enqueue'] : false);
 
 			// javascript specific vetting
 			if ($filetype == "js") {
 
-				$file['js_in_header'] = ($file['js_in_header'] ? $file['js_in_header'] : false);
+				$file['js_in_header'] = (isset($file['js_in_header']) ? $file['js_in_header'] : false);
 			}
 
 			// CSS specific vetting
 			if ($filetype = "css") {
 
-				$file['media'] = ($file['media'] ? $file['media'] : "all");
+				$file['media'] = (isset($file['media']) ? $file['media'] : "all");
 			} 
 
 			return $file;
@@ -207,8 +211,8 @@
 			$item_to_enqueue = array();
 
 			$item_to_enqueue['handle'] = $data["handle"];
-			$item_to_enqueue['usecase'] = ($data["usecase"] ? $data['usecase'] : 'frontend' );
-			$item_to_enqueue['filetype'] = ($data['filetype'] ? $data['filetype'] : ($data['url'] ? $this->_get_filetype($data['url']) : "unknown") );
+			$item_to_enqueue['usecase'] = (isset($data["usecase"]) ? $data['usecase'] : 'frontend' );
+			$item_to_enqueue['filetype'] = (isset($data['filetype']) ? $data['filetype'] : (isset($data['url']) ? $this->_get_filetype($data['url']) : "unknown") );
 
 			return $item_to_enqueue;
 		}
@@ -217,7 +221,7 @@
 
 			$this->items_to_register[] = $this->_normalize_for_registration($data);
 
-			if ($this->process["register"] != true){
+			if (!isset($this->process["register"]) || $this->process["register"] != true){
 
 				$this->process["register"] = true;
 			}
@@ -227,7 +231,7 @@
 
 			$this->items_to_enqueue[] = $this->_normalize_for_enqueue($data);
 
-			if ($this->process["enqueue"] != true){
+			if (!isset($this->process["enqueue"]) || $this->process["enqueue"] != true){
 
 				$this->process["enqueue"] = true;
 			}
@@ -385,12 +389,12 @@
 		// PROCESS INSTANCE
 		public function init_instance(){
 
-			if ($this->process["register"] == true) {
+			if (isset($this->process["register"]) && $this->process["register"] == true) {
 
 				$this->_register_items();
 			}
 
-			if ($this->process["enqueue"] == true) {
+			if (isset($this->process["enqueue"]) && $this->process["enqueue"] == true) {
 
 				$this->_enqueue_items();
 			}
