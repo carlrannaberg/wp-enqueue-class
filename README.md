@@ -30,12 +30,19 @@ $script
 $script[params]
 --------------
 **$prefix** = string [*used to prevent clash between other Wordpress / 3rd Party script enqueues*]
+
 **$name** = string [*enqueue pseudoname in Wordpress*]
+
 **$src** = string [*url/path/to/script/folder*]
+
 **$file** = string[*filename.ext*]
+
 **$deps** = string / array [*contains list of script pseudonames required for file load*]
+
 **$version** = int / string
+
 **$footerLoad** = string [*header, footer*]
+
 **$location** = string [*frontend, backend, both*]
 
 
@@ -59,12 +66,19 @@ $style
 $style[param]
 -------------
 **$prefix** = string [*used to prevent clash between other Wordpress / 3rd Party script enqueues*]
+
 **$name** = string [*enqueue pseudoname in Wordpress*]
+
 **$src** = string [*url/path/to/script/folder*]
+
 **$file** = string[*filename.ext*]
+
 **$deps** = string / array [*contains list of script pseudonames required for file load*]
+
 **$version** = int / string
+
 **$media** = string [*all, aural, braille, embossed, handheld, print, projection, screen, tty, tv*]
+
 **$location** = string[*frontend, backend, both*]
 
 
