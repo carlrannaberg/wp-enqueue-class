@@ -58,6 +58,85 @@
 				$process = array(),
 				$enqueue_hook;
 
+		// needs proper filtering for array of usecases
+		private function _is_correct_enqueue_hook($data){
+
+			// filter out bad usecases
+			if( !isset($data) || !isset($data['usecase']) ){
+
+				return false;
+			}			
+
+			// normalizing $data['usecase'] content to lowercase chars
+			// - string
+			if( is_string($data['usecase']) ){
+
+				$data['usecase'] = strtolower( $data['usecase'] );
+			}
+
+			// - array
+			else if( is_array($data['usecase']) ){
+
+				$data['usecase'] = array_map('strtolower', $data['usecase']);
+			}
+
+			// function
+			if (is_callable($data['usecase'])){
+
+				return $data['usecase']();
+			}
+
+			// handle 'all' as string or in array
+			if( $data['usecase'] == "all" || is_array($data['usecase']) && in_array('all', $data['usecase']) ){
+
+				return true;
+			}
+
+			// pair code with login hooks
+			switch ($this->enqueue_hook){
+
+				case 'wp_enqueue_scripts':
+
+					if( is_string($data['usecase']) && $data['usecase'] == 'frontend'
+					||	is_array($data['usecase']) && in_array('frontend', $data['usecase'])
+					){
+
+						return true;
+					}
+
+					return false;
+
+				break;
+
+				case 'admin_enqueue_scripts':
+
+					if (  is_string($data['usecase']) && $data['usecase'] == 'backend'
+					||	is_array($data['usecase']) && in_array('backend', $data['usecase'])
+					){
+						return true;
+					}
+
+					return false;
+
+				break;
+
+				case 'login_enqueue_scripts':
+
+					if (  is_string($data['usecase']) && $data['usecase'] == 'login'
+					||	is_array($data['usecase']) && in_array('login', $data['usecase'])
+					){
+						return true;
+					}
+
+					return false;
+
+				break;
+			}
+
+			// at this point its safe to say it doesn't match the hook 
+			return false;
+		}
+
 		private function _is_register_data($data){
 
 			if ( isset($data) && isset($data["handle"]) && isset($data["url"]) ) {
@@ -228,6 +307,11 @@
 		}
 
 		private function _add_to_enqueue_list($data){
+
+			if ( !$this->_is_correct_enqueue_hook($data) ){
+
+				return;
+			}
 
 			$this->items_to_enqueue[] = $this->_normalize_for_enqueue($data);
 
@@ -403,11 +487,12 @@
 		function __construct( $params = NULL ){
 
 			$this->instance_params = $params;
+			$this->enqueue_hook = $this->get_enqueue_hook();
 
 
-			if ( !has_action($this->get_enqueue_hook(), array($this, 'init_instance')) ){
+			if ( !has_action($this->enqueue_hook, array($this, 'init_instance')) ){
 
-				add_action( $this->get_enqueue_hook(), array($this, 'init_instance') );
+				add_action( $this->enqueue_hook, array($this, 'init_instance') );
 			}
 		}
 	}
