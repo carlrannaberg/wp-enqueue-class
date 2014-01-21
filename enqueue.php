@@ -420,6 +420,8 @@
 			// $params = single enqueue file
 			if ( $this->_is_register_data($params) ){
 
+				if( !file_exists($params['url']) ){ echo "COULDN'T FIND THIS FILE: " . $params['url']; }
+
 				$this->_add_to_register_list($params);
 
 				echo $this->_is_register_data($params);
@@ -431,6 +433,8 @@
 				foreach ($params as $data){
 
 					if ( $this->_is_register_data($data) ){
+
+						if( !file_exists($data['url']) ){ echo "COULDN'T FIND THIS FILE: " . $data['url']; }
 
 						$this->_add_to_register_list($data);
 					}
@@ -452,7 +456,20 @@
 			// $params = single enqueue file
 			if ( $this->_is_enqueue_data($params) ){
 
-				$this->_add_to_enqueue_list($params);
+				// already registered
+				if( wp_script_is($params['handle'], 'registered') ){
+
+					$this->_add_to_enqueue_list($params);
+				} 
+
+				// needs to be registered
+				else if( $this->_is_register_data($params) ){
+
+					// flag for auto enqueue
+					$params['enqueue'] = true;
+
+					$this->_add_to_register_list($params);
+				} 
 			}
 
 			// $params = multiple enqueue files
@@ -462,7 +479,20 @@
 
 					if ( $this->_is_enqueue_data($data) ){
 
-						$this->_add_to_enqueue_list($data);
+						// already registered
+						if( wp_script_is($data['handle'], 'registered') ){
+
+							$this->_add_to_enqueue_list($data);
+						} 
+
+						// needs to be registered
+						else if( $this->_is_register_data($data) ){
+
+							// flag for auto enqueue
+							$data['enqueue'] = true;
+
+							$this->_add_to_register_list($data);
+						} 
 					}
 				}
 			}
