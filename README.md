@@ -10,20 +10,44 @@ Class Name: **SimplyEnqueue**
 
 **Function List**
 ==============
-1. function register($scripts)
+1. function register($assets)
 -------------
 
-**$scripts**
+**$assets**
 Array of scripts or styles to be registered
 
-2. function enqueue($scripts)
+2. function enqueue($assets)
 -------------
 
-**$scripts**
+**$assets**
 Array of scripts or styles to be enqueued
 
 3. function get_enqueue_hook()
 Determines appropriate enqueue hook and returns it
+
+Options
+==========
+
+	// Required parameters
+	"handle" => "handle",
+	"url" => "url/to/file.css", // CSS or JS
+	
+	// Optional parameters
+	"deps" => "handle" || "url/to/file.js" || array("handle", "url/to/file.js"),
+	"ver" => "version number", // will default to 0.0.0 if unset
+	"usecase" => "frontend" || "backend" || "template.php" || array("home-page.php", "author.php, "backend") || "login" || "all", // will default to frontend if unset
+	"js_in_header" => true || false
+	// only for JS files
+	// will default to false if unset
+	// will be overridden if a dependency specifies false for this property
+	"media" => "all" || "print" || screen"
+	// only for CSS files
+	// will default to all if unset
+	"enqueue" => true || false || function
+	// determines if file should be enqueued
+	// function must return true or false
+	// will default to false if unset
+	);
 
 Usage
 ==========
@@ -33,7 +57,7 @@ Setup
 
 	function enqueue_js() {
 
-		$scripts = array (
+		$assets = array (
 		
 			array(
 					'handle' => 'json2',
@@ -43,6 +67,13 @@ Setup
 					'js_in_header' => true,
 					'enqueue' => true
 				),
+			array(
+					'handle' => 'site-style',
+					'url' => 'path/to/style.css',
+					'ver' => '1.0',
+					'media' => 'all',
+					'enqueue' => true
+				),
 
 		);
 		
@@ -50,7 +81,7 @@ Setup
 		require_once ("path/to/enqueue.php");
 		
 		$enqueue = new SimplyEnqueue;
-		$enqueue->register($scripts);
+		$enqueue->register($assets);
 
 	}
 
