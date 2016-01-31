@@ -380,11 +380,22 @@
 		}
 
 		private function _file_exists($url) {
-			$relative_path = str_ireplace(get_site_url(), '', $url);
-			$home_path = untrailingslashit(ABSPATH);
-			$file_path = $home_path . $relative_path;
+			$file_exists = false;
+			$site_url = get_site_url();
+			$is_url = filter_var($url, FILTER_VALIDATE_URL);
+			$is_current_site_url = strpos($url, $site_url);
 
-			return file_exists($file_path);
+			if ($is_current_site_url !== false) {
+				$relative_path = str_ireplace($site_url, '', $url);
+				$home_path = untrailingslashit(ABSPATH);
+				$file_path = $home_path . $relative_path;
+				$file_exists = file_exists($file_path);
+			} else if ($is_url) {
+				// Probably a remote URL
+				$file_exists = true;
+			}
+
+			return $file_exists;
 		}
 
 		/*
