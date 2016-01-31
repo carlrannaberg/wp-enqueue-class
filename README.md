@@ -32,7 +32,7 @@ Options
 
 	// Required parameters
 	"handle" => "handle",
-	"url" => "url/to/file.css", // CSS or JS
+	"src" => "url/to/file.css", // CSS or JS
 	
 	// Optional parameters
 	"deps" => "handle" || "url/to/file.js" || array("handle", "url/to/file.js"),
@@ -64,7 +64,7 @@ Setup
 		
 			array(
 					'handle' => 'json2',
-					'url' => 'path/to/json2.js',
+					'src' => 'path/to/json2.js',
 					'deps' => '',
 					'ver' => '1.0',
 					'js_in_header' => true,
@@ -72,7 +72,7 @@ Setup
 				),
 			array(
 					'handle' => 'site-style',
-					'url' => 'path/to/style.css',
+					'src' => 'path/to/style.css',
 					'ver' => '1.0',
 					'media' => 'all',
 					'enqueue' => true
