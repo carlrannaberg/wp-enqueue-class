@@ -2,6 +2,9 @@ Wordpress Enqueue Class
 ==============
 Quickly and efficiently Enqueue scripts and stylesheets for Wordpress.
 
+**Requires:** 4.2.0 or higher
+
+**Compatible up to:** 4.4.1
 
 
 Enqueue Class
@@ -75,6 +78,14 @@ Setup
 					'src' => 'path/to/style.css',
 					'ver' => '1.0',
 					'media' => 'all',
+					'enqueue' => true
+				),
+			array(
+					'handle' => 'old-ie-style',
+					'src' => 'path/to/old-ie-style.css',
+					'ver' => '1.0',
+					'media' => 'all',
+					'conditional' => 'lt IE 9',
 					'enqueue' => true
 				),
 
