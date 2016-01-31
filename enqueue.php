@@ -285,6 +285,7 @@
 			$item_to_enqueue['handle'] = $data['handle'];
 			$item_to_enqueue['usecase'] = (isset($data['usecase']) ? $data['usecase'] : 'frontend' );
 			$item_to_enqueue['filetype'] = (isset($data['filetype']) ? $data['filetype'] : (isset($data['src']) ? $this->_get_filetype($data['src']) : "unknown") );
+			$item_to_enqueue['conditional'] = isset($data['conditional']) ? $data['conditional'] : '';
 
 			return $item_to_enqueue;
 		}
@@ -351,11 +352,19 @@
 				if ( $filetype == "js") {
 
 					wp_enqueue_script(  $file['handle'] );
+
+					if (!empty($file['conditional'])) {
+						wp_script_add_data( $file['handle'], 'conditional', $file['conditional'] );
+					}
 				}
 
 				if ( $filetype == "css") {
 
 					wp_enqueue_style( $file['handle'] );
+
+					if (!empty($file['conditional'])) {
+						wp_style_add_data( $file['handle'], 'conditional', $file['conditional'] );
+					}
 				}
 
 				if ( $filetype == "unknown") {
