@@ -9,15 +9,15 @@ Enqueue Class
 Class Name: **SimplyEnqueue**
 
 **Function List**
-
+==============
 1. function register($scripts)
-========================
+-------------
 
 **$scripts**
 Array of scripts or styles to be registered
 
 2. function enqueue($scripts)
-========================
+-------------
 
 **$scripts**
 Array of scripts or styles to be enqueued
