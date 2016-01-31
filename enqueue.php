@@ -1,52 +1,45 @@
-<?php 
-	
+<?php
+
 	/*
-
-	SIMPLY ENQUEUE
-	It shouldn't be complicated to add files in wordpress in a neat fashion.
-	Team Automattic built a nice and neat way to do it (via enqueues).
-	This is only a wrapper that simplifies their work.
-
-	Enjoy! 
+		Wordpress Enqueue Class
 	o/
-	
 
-	$about_this_class = array(	
-		"name" => "(dxm) Simply Enqueue",
-		"class" => "SimplyEnqueue",
-		"version" => "0.0.1",
-		"github" => "https://github.com/Akamaozu/dxm-wp-enqueue"
+	$about_this_class = array(
+			"name" => "Wordpress Enqueue Class",
+			"class" => "SimplyEnqueue",
+			"version" => "0.0.2",
+			"github" => "https://github.com/carlrannaberg/wp-enqueue-class"
 	)
 
 	// REQUIRED PARAMS
 	"handle" => "handle",
 	"url" => "url/to/file.css",
-		|- CSS or JS
+			|- CSS or JS
 
 	// OPTIONAL PARAMS
 	"deps" => "handle" || "url/to/file.js" || array("handle", "url/to/file.js"),
 
-	"ver" => "version number", 
-		|- will default to 0.0.0 if unset
+	"ver" => "version number",
+			|- will default to 0.0.0 if unset
 
-	"usecase" => "frontend" || "backend" || "template.php" || array("home-page.php", "author.php, "backend") || "login" || "all", 
-		|- will default to frontend if unset
+	"usecase" => "frontend" || "backend" || "template.php" || array("home-page.php", "author.php, "backend") || "login" || "all",
+			|- will default to frontend if unset
 
 	"js_in_header" => true || false
-		|- only for JS files
-		|- will default to false if unset
-		|- will be overridden if a dependency specifies false for this property
+			|- only for JS files
+			|- will default to false if unset
+			|- will be overridden if a dependency specifies false for this property
 
 	"media" => "all" || "print" || screen"
-		|- only for CSS files
-		|- will default to all if unset
+			|- only for CSS files
+			|- will default to all if unset
 
 	"enqueue" => true || false || function
-		|- determines if file should be enqueued
-		|- function must return true or false
-		|- will default to false if unset
+			|- determines if file should be enqueued
+			|- function must return true or false
+			|- will default to false if unset
 	);
-				
+
 	*/
 
 
@@ -65,7 +58,7 @@
 			if( !isset($data) || !isset($data['usecase']) ){
 
 				return false;
-			}			
+			}
 
 			// normalizing $data['usecase'] content to lowercase chars
 			// - string
@@ -133,13 +126,13 @@
 				break;
 			}
 
-			// at this point its safe to say it doesn't match the hook 
+			// at this point its safe to say it doesn't match the hook
 			return false;
 		}
 
 		private function _is_register_data($data){
 
-			if ( isset($data) && isset($data["handle"]) && isset($data["url"]) ) {
+			if ( isset($data) && isset($data['handle']) && isset($data['url']) ) {
 
 				return true;
 			}
@@ -167,7 +160,7 @@
 
 		private function _is_enqueue_data($data){
 
-			if ( isset($data) && ( is_array($data) || is_object($data) ) && isset($data["handle"]) ){
+			if ( isset($data) && ( is_array($data) || is_object($data) ) && isset($data['handle']) ){
 
 				return true;
 			}
@@ -202,23 +195,23 @@
 
 			// if url var is the right datatype, try to get filetype
 			if ( is_string($url) ) {
-				
+
 				$fractalUrl = explode('/', $url);
-				
+
 				$filename = $fractalUrl[count($fractalUrl) - 1];
 				$fractalFilename = explode('.', $filename);
 
-				$fileExtension = strtolower($fractalFilename[1]);
+				$fileExtension = strtolower($fractalFilename[count($fractalFilename) - 1]);
 
 				if (strpos($fileExtension, "js") !== false) {
 
 					$filetype = "js";
 				}
-				
+
 				if (strpos($fileExtension, "css") !== false) {
 
 					$filetype = "css";
-				} 
+				}
 			}
 
 			return $filetype;
@@ -253,15 +246,15 @@
 			if ( $filetype == 'unknown') {
 
 				echo "'" . $file['handle'] . "' doesn't seem to be a stylesheet or javascript. Doublecheck the url. <br />";
-				// letting it continue through, just in case its a valid file served up in a format _get_filetype() doesn't check. 
+				// letting it continue through, just in case its a valid file served up in a format _get_filetype() doesn't check.
 				// an example is css served as a php file
 			}
 
 			$file["filetype"] = $filetype;
-			
+
 			// version number
 			$file['ver'] = (isset($file['ver']) ? $file['ver'] : "0.0.0");
-			
+
 			// usecase
 			$file['usecase'] = (isset($file['usecase']) ? $file['usecase'] : "all");
 
@@ -280,7 +273,7 @@
 			if ($filetype = "css") {
 
 				$file['media'] = (isset($file['media']) ? $file['media'] : "all");
-			} 
+			}
 
 			return $file;
 		}
@@ -289,8 +282,8 @@
 
 			$item_to_enqueue = array();
 
-			$item_to_enqueue['handle'] = $data["handle"];
-			$item_to_enqueue['usecase'] = (isset($data["usecase"]) ? $data['usecase'] : 'frontend' );
+			$item_to_enqueue['handle'] = $data['handle'];
+			$item_to_enqueue['usecase'] = (isset($data['usecase']) ? $data['usecase'] : 'frontend' );
 			$item_to_enqueue['filetype'] = (isset($data['filetype']) ? $data['filetype'] : (isset($data['url']) ? $this->_get_filetype($data['url']) : "unknown") );
 
 			return $item_to_enqueue;
@@ -300,9 +293,9 @@
 
 			$this->items_to_register[] = $this->_normalize_for_registration($data);
 
-			if (!isset($this->process["register"]) || $this->process["register"] != true){
+			if (!isset($this->process['register']) || $this->process['register'] != true){
 
-				$this->process["register"] = true;
+				$this->process['register'] = true;
 			}
 		}
 
@@ -315,9 +308,9 @@
 
 			$this->items_to_enqueue[] = $this->_normalize_for_enqueue($data);
 
-			if (!isset($this->process["enqueue"]) || $this->process["enqueue"] != true){
+			if (!isset($this->process['enqueue']) || $this->process['enqueue'] != true){
 
-				$this->process["enqueue"] = true;
+				$this->process['enqueue'] = true;
 			}
 		}
 
@@ -325,12 +318,12 @@
 
 			foreach ($this->items_to_register as $file){
 
-				if ( $file["filetype"] == "js") {
-				
+				if ( $file['filetype'] == "js") {
+
 					wp_register_script(	$file['handle'], $file['url'], $file['deps'], $file['ver'], !$file['js_in_header'] );
 				}
 
-				if ( $file["filetype"] == "css") {
+				if ( $file['filetype'] == "css") {
 
 					wp_register_style( $file['handle'], $file['url'], $file['deps'], $file['ver'], $file['media'] );
 				}
@@ -339,18 +332,25 @@
 
 					$this->_add_to_enqueue_list($file);
 				}
-			} 
+			}
 		}
 
 		private function _enqueue_items(){
 
 			foreach ($this->items_to_enqueue as $file){
+				$filetype = $file['filetype'];
 
-				$filetype = $file["filetype"] || ( $file['url'] ? $this->_get_filetype($file['url']) : 'unknown' );
+				if (!$filetype) {
+					if ($file['url']) {
+						$filetype = $this->_get_filetype($file['url']);
+					} else {
+						$filetype = 'unknown';
+					}
+				}
 
 				if ( $filetype == "js") {
-				
-					wp_enqueue_script(	$file['handle'] );
+
+					wp_enqueue_script(  $file['handle'] );
 				}
 
 				if ( $filetype == "css") {
@@ -360,18 +360,18 @@
 
 				if ( $filetype == "unknown") {
 
-				 	// check if handle is a style or script
+					// check if handle is a style or script
 					// enqueue accordingly
-					
+
 					// for now, fire blindly
 					wp_enqueue_style( $file['handle'] );
-					wp_enqueue_script(	$file['handle'] );
+					wp_enqueue_script(  $file['handle'] );
 				}
-			} 
+			}
 		}
 
-		/* 
-			PUBLIC FUNCTIONS 
+		/*
+			PUBLIC FUNCTIONS
 			* Accessible from outside the Class
 
 			|- Class Instance
@@ -382,7 +382,7 @@
 
 
 		// DETERMINE APPROPRIATE ENQUEUE HOOK AND RETURN IT
-		// @returns: string	
+		// @returns: string
 		public function get_enqueue_hook() {
 
 			if ( isset($this->enqueue_hook) && in_array(strtolower($this->enqueue_hook), array( "wp_enqueue_scripts", "admin_enqueue_scripts", "login_enqueue_scripts") )  ){
@@ -396,13 +396,13 @@
 				if ( in_array( $GLOBALS['pagenow'], array( 'wp-login.php', 'wp-register.php' ) ) ) {
 
 					$this->enqueue_hook = 'login_enqueue_scripts';
-				
+
 				} else {
 
 					// check if backend page
 					// if not, assume frontend
 					$this->enqueue_hook = ( true == is_admin() ? 'admin_enqueue_scripts' : 'wp_enqueue_scripts' );
-				} 
+				}
 
 				return $this->enqueue_hook;
 			}
@@ -460,7 +460,7 @@
 				if( wp_script_is($params['handle'], 'registered') ){
 
 					$this->_add_to_enqueue_list($params);
-				} 
+				}
 
 				// needs to be registered
 				else if( $this->_is_register_data($params) ){
@@ -469,7 +469,7 @@
 					$params['enqueue'] = true;
 
 					$this->_add_to_register_list($params);
-				} 
+				}
 			}
 
 			// $params = multiple enqueue files
@@ -483,7 +483,7 @@
 						if( wp_script_is($data['handle'], 'registered') ){
 
 							$this->_add_to_enqueue_list($data);
-						} 
+						}
 
 						// needs to be registered
 						else if( $this->_is_register_data($data) ){
@@ -492,7 +492,7 @@
 							$data['enqueue'] = true;
 
 							$this->_add_to_register_list($data);
-						} 
+						}
 					}
 				}
 			}
@@ -503,16 +503,16 @@
 		// PROCESS INSTANCE
 		public function init_instance(){
 
-			if (isset($this->process["register"]) && $this->process["register"] == true) {
+			if (isset($this->process['register']) && $this->process['register'] == true) {
 
 				$this->_register_items();
 			}
 
-			if (isset($this->process["enqueue"]) && $this->process["enqueue"] == true) {
+			if (isset($this->process['enqueue']) && $this->process['enqueue'] == true) {
 
 				$this->_enqueue_items();
 			}
-		}		
+		}
 
 		function __construct( $params = NULL ){
 
