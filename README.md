@@ -23,7 +23,9 @@ Array of scripts or styles to be registered
 Array of scripts or styles to be enqueued
 
 3. function get_enqueue_hook()
+-------------
 Determines appropriate enqueue hook and returns it
+
 
 Options
 ==========
@@ -48,6 +50,7 @@ Options
 	// function must return true or false
 	// will default to false if unset
 	);
+
 
 Usage
 ==========
