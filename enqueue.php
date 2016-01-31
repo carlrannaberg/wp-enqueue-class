@@ -132,7 +132,7 @@
 
 		private function _is_register_data($data){
 
-			if ( isset($data) && isset($data['handle']) && isset($data['url']) ) {
+			if ( isset($data) && isset($data['handle']) && isset($data['src']) ) {
 
 				return true;
 			}
@@ -220,28 +220,28 @@
 		private function _normalize_for_registration($file){
 
 			// error handling
-			if ( !$file['handle'] || !$file['url'] ) {
+			if ( !$file['handle'] || !$file['src'] ) {
 
-				if (!$file['handle'] && !$file['url']) {
+				if (!$file['handle'] && !$file['src']) {
 
 					echo "Enqueuing a file without a handle AND url? GO HOME, DEVELOPER. YOU'RE DRUNK. <br />";
 					return;
 				}
 
-				if (!$file['handle'] && $file['url']) {
+				if (!$file['handle'] && $file['src']) {
 
-					echo "No handle set for '" . $file['url'] . "' <br />";
+					echo "No handle set for '" . $file['src'] . "' <br />";
 					return;
 				}
 
-				if (!$file['url'] && $file['handle']) {
+				if (!$file['src'] && $file['handle']) {
 
 					echo "No url given for '" . $file['handle'] . "' <br />";
 					return;
 				}
 			}
 
-			$filetype = $this->_get_filetype($file['url']);
+			$filetype = $this->_get_filetype($file['src']);
 
 			if ( $filetype == 'unknown') {
 
@@ -284,7 +284,7 @@
 
 			$item_to_enqueue['handle'] = $data['handle'];
 			$item_to_enqueue['usecase'] = (isset($data['usecase']) ? $data['usecase'] : 'frontend' );
-			$item_to_enqueue['filetype'] = (isset($data['filetype']) ? $data['filetype'] : (isset($data['url']) ? $this->_get_filetype($data['url']) : "unknown") );
+			$item_to_enqueue['filetype'] = (isset($data['filetype']) ? $data['filetype'] : (isset($data['src']) ? $this->_get_filetype($data['src']) : "unknown") );
 
 			return $item_to_enqueue;
 		}
@@ -320,12 +320,12 @@
 
 				if ( $file['filetype'] == "js") {
 
-					wp_register_script(	$file['handle'], $file['url'], $file['deps'], $file['ver'], !$file['js_in_header'] );
+					wp_register_script(	$file['handle'], $file['src'], $file['deps'], $file['ver'], !$file['js_in_header'] );
 				}
 
 				if ( $file['filetype'] == "css") {
 
-					wp_register_style( $file['handle'], $file['url'], $file['deps'], $file['ver'], $file['media'] );
+					wp_register_style( $file['handle'], $file['src'], $file['deps'], $file['ver'], $file['media'] );
 				}
 
 				if ( (isset($file['enqueue'])) && (($file['enqueue'] === true) || (is_callable($file['enqueue']) && $file['enqueue']() === true)) ){
@@ -341,8 +341,8 @@
 				$filetype = $file['filetype'];
 
 				if (!$filetype) {
-					if ($file['url']) {
-						$filetype = $this->_get_filetype($file['url']);
+					if ($file['src']) {
+						$filetype = $this->_get_filetype($file['src']);
 					} else {
 						$filetype = 'unknown';
 					}
@@ -368,6 +368,14 @@
 					wp_enqueue_script(  $file['handle'] );
 				}
 			}
+		}
+
+		private function _file_exists($url) {
+			$relative_path = str_ireplace(get_site_url(), '', $url);
+			$home_path = untrailingslashit(ABSPATH);
+			$file_path = $home_path . $relative_path;
+
+			return file_exists($file_path);
 		}
 
 		/*
@@ -420,7 +428,9 @@
 			// $params = single enqueue file
 			if ( $this->_is_register_data($params) ){
 
-				if( !file_exists($params['url']) ){ echo "COULDN'T FIND THIS FILE: " . $params['url']; }
+				if( !$this->_file_exists($params['src']) ) {
+					echo "COULDN'T FIND THIS FILE: " . $params['src'];
+				}
 
 				$this->_add_to_register_list($params);
 
@@ -434,7 +444,9 @@
 
 					if ( $this->_is_register_data($data) ){
 
-						if( !file_exists($data['url']) ){ echo "COULDN'T FIND THIS FILE: " . $data['url']; }
+						if( !$this->_file_exists($data['src']) ) {
+							echo "COULDN'T FIND THIS FILE: " . $data['src'];
+						}
 
 						$this->_add_to_register_list($data);
 					}
